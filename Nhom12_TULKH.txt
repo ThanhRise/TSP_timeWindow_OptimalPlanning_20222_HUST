@@ -1,0 +1,40 @@
+Một nhân viên giao hàng lấy hàng ở kho (điểm 0) và cần đi giao hàng cho 𝑁khách hàng 1,2,...,𝑁. 
+Khách hàng 𝑖nằm ở điểm 𝑖và có yêu cầu giao hàng trong khoảng thời gian từ 𝑒(𝑖)đến 𝑙(𝑖)và giao hàng hết 𝑑(𝑖)đơn vị thời gian (𝑠). 
+Biết rằng 𝑡(𝑖,𝑗)là thời gian di chuyển từ điểm 𝑖đến điểm 𝑗. Nhân viên giao hàng xuất phát từ kho tại thời điểm 𝑡0, 
+hãy tính toán lộ trình giao hàng cho nhân viên giao hàng(quay trở về kho) sao cho tổng thời gian di chuyển là ngắn nhất.
+
+Each solution is represented by a permutation 𝑠[1],𝑠[2],...,𝑠[𝑁]of 1,2,...,𝑁.
+•Input
+•Line 1: contains a positive integer 𝑁(1≤𝑁≤1000)
+•Line 𝑖+1(𝑖=1,...,𝑁): contains 𝑒(𝑖),𝑙(𝑖)and 𝑑(𝑖)
+•Line 𝑖+𝑁+2(𝑖=0,1,...,𝑁): contains the ith row of the matrix 𝑡
+.•Output
+•Line 1: contains 𝑁•Line 2: contains 𝑠[1],𝑠[2],...,𝑠[𝑁]
+----------------------------------------------------------------
+5
+50 90 20
+300 350 15
+215 235 5
+374 404 20
+107 147 20
+0 50 10 100 70 10
+50 0 40 70 20 40 
+10 40 0 80 60 0
+100 70 80 0 70 80
+70 20 60 70 0 60
+10 40 0 80 60 0
+
+----------------------------------------------------------------
+solve:
+X(i,j) = 1 nếu chu trình đi từ i đến j, X(i,j) = 0 nếu không đi từ i đến j.
+C[i][j] = d(i) + t(i,j)
+M(i) tổng thời gian khi đến thành phố i, 
+	- M(u) = M(i) + C[i][u] nếu X(u,i) = 1 và e(u) < M(u) < l(u)
+	- M(u) = e(u)
+
+0 50 10 100 70 10
+70 20 60 90 40 60
+25 55 15 95 75 15
+105 75 85 5 75 85 
+90 40 80 90 20 80
+30 60 20 100 80 20
