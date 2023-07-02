@@ -1,0 +1,9 @@
+# c++
+*.exe
+
+# vscode
+.vscode
+*.json
+
+test.*
+input.*

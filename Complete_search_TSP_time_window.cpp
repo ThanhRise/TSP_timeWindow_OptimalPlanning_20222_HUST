@@ -1,6 +1,5 @@
 // Đường dẫn vấn đề: Nhom12_TULKH.txt
-
-#include <bits/stdc++.h>
+#include <iostream>
 using namespace std;
 
 int N, e[1001], l[1001], d[1001], t[1001][1001], s[1001];
@@ -43,9 +42,8 @@ void input()
         for (int j = 0; j <= N; j++)
         {
             C[i][j] = d[i] + t[i][j];
-            cout << C[i][j] << " ";
+            // cout << C[i][j] << " ";
         }
-        cout << endl;
     }
 }
 

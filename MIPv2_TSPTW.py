@@ -1,18 +1,10 @@
-# CONSTAINTS PROGRAMMINGV- TSP with time window
-# -----------------------------------------------
+# MIXED-INTEGER PROGRAMMING MODEL FOR THE TIME WINDOWED TRAVELING SALESMAN PROBLEM
 
-# constraints:
-# each city is visited exactly once
-# subtour elimination
-# time window
+from ortools.linear_solver import pywraplp
 
-from ortools.sat.python import cp_model
+def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
+    model = pywraplp.Solver.CreateSolver('SCIP')
 
-
-def TSP_CP(n, time_matrix, dist_matrix):
-    model = cp_model.CpModel()
-    # X(i,j) = 1 if i -> j else 0
-    # define variables
     num_nodes = n + 1
     e = {}  # earliest time to visit city i
     l = {}  # latest time to visit city i
@@ -20,7 +12,6 @@ def TSP_CP(n, time_matrix, dist_matrix):
     x = {}  # x[i,j] = 1 if i -> j else 0
     C = {}  # C[i,j] = d[i] + dist_matrix[i][j]
     M = {}  # M[i] = time to visit city i
-    M[0] = 0
     d[0] = 0
     e[0] = 0
     l[0] = 100000
@@ -28,22 +19,24 @@ def TSP_CP(n, time_matrix, dist_matrix):
         e[i] = time_matrix[i-1][0]
         l[i] = time_matrix[i-1][1]
         d[i] = time_matrix[i-1][2]
+
     for i in range(num_nodes):
         for j in range(num_nodes):
-            x[i, j] = model.NewIntVar(0, 1, 'x[%i,%i]' % (i, j))
+            x[i, j] = model.IntVar(0, 1, 'x[%i,%i]' % (i, j))
             C[i, j] = d[i] + dist_matrix[i][j]
+    M[0] = model.IntVar(0, 0, 'M[%i]' % 0)
     for i in range(1, num_nodes):
-        M[i] = model.NewIntVar(e[i], l[i], 'M[%i]' % i)
+        M[i] = model.IntVar(e[i], l[i], 'M[%i]' % i)
 
     # u[i] = j if city i is visited at position j
     u = {}
     for i in range(num_nodes):
-        u[i] = model.NewIntVar(0, num_nodes - 1, 'u[%i]' % i)
+        u[i] = model.IntVar(0, num_nodes - 1, 'u[%i]' % i)
  
     # time waiting at city i
     w = {}
     for i in range(num_nodes):
-        w[i] = model.NewIntVar(0, l[i] - e[i], 'w[%i]' % i)
+        w[i] = model.IntVar(0, l[i] - e[i], 'w[%i]' % i)
 
     # define constraints
     # each city is visited exactly once
@@ -62,45 +55,37 @@ def TSP_CP(n, time_matrix, dist_matrix):
         for j in range(1, num_nodes):
             if i != j:
                 model.Add(M[i] + C[i, j]*x[i, j] - M[j] <= (1 - x[i, j]) * 100000)
-
+ 
     for i in range(num_nodes):
         for j in range(1, num_nodes):
             if i != j:
-                model.Add(w[j] == M[j] - M[i] - C[i, j]).OnlyEnforceIf(x[i, j])
+                model.Add(w[j] - M[j] + M[i] >= -C[i, j] + (x[i,j] - 1) * 100000)
+                
+                
 
-    # objective
+    # define objective function
+    # sum(C[i, j] * x[i, j] for i in range(num_nodes) for j in range(num_nodes) if j != i) + sum(w[i] for i in range(num_nodes))
     model.Minimize(sum(C[i, j] * x[i, j] for i in range(num_nodes) for j in range(num_nodes) if j != i) + sum(w[i] for i in range(num_nodes)))
 
-    # solve
-    solver = cp_model.CpSolver()
-    status = solver.Solve(model)
 
-    if status == cp_model.OPTIMAL:
-        print(num_nodes - 1)
-        print('Minimum cost = %i' % solver.ObjectiveValue())
-        print()
-        # for i in range(num_nodes):
-        #     for j in range(num_nodes):
-        #         if solver.Value(x[i, j]) == 1:
-        #             print('%i -> %i' % (i, j))
-        # for i in range(num_nodes):
-        #     print('M[%i] = %i' % (i, solver.Value(M[i])))
-        #     print('w[%i] = %i' % (i, solver.Value(w[i])))
-        # print()
+    status = model.Solve()
+    if status == pywraplp.Solver.OPTIMAL:
+        print('Objective value =', model.Objective().Value())
+        for i in range(num_nodes):
+            for j in range(num_nodes):
+                if x[i, j].solution_value() > 0:
+                    print('x[%i,%i] = %i' % (i, j, x[i, j].solution_value()))
+        for i in range(num_nodes):
+            print('M[%i] = %i' % (i, M[i].solution_value()))
+        for i in range(num_nodes):
+            print('w[%i] = %i' % (i, w[i].solution_value()))
+        for i in range(num_nodes):
+            print('u[%i] = %i' % (i, u[i].solution_value()))
 
-        solution = {}
-        for i in range(1, num_nodes):
-            print('w[%i] = %i' % (i, solver.Value(w[i])))
-            solution[solver.Value(u[i])] = i
-        for i in range(num_nodes- 1):
-            print(solution[i], end=' ')
-        print()
-        print('Time = ', solver.WallTime(), ' milliseconds')
-
+    return model.Objective().Value()
 
 if __name__ == '__main__':
 
-    # input from file
     input_data = []
     customers = []
     t = []
@@ -115,7 +100,8 @@ if __name__ == '__main__':
         for _ in range(N+1):
             row = list(map(int, file.readline().split()))
             t.append(row)
-    TSP_CP(N, customers, t)
-# 15 18 4 3 2 16 14 11 8 17 7 1 6 5 13 9 10 12 19
-# 15 18 4 2 3 16 14 11 8 17 7 1 6 5 13 9 10 12 19
-# 15 18 4 3 2 16 14 11 8 17 7 1 6 5 13 9 10 12 19
+    print(TSP_mixed_integer_programming(N, customers, t))
+    
+    
+
+

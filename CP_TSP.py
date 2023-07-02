@@ -27,8 +27,8 @@ def TSP_CP(dist_matrix):
         model.Add(sum(x[i, j] for j in range(n) if j != i) == 1)
         model.Add(sum(x[j, i] for j in range(n) if j != i) == 1)
     # subtour elimination
-    for i in range(1, n):
-        for j in range(1, n):
+    for i in range(1,n):
+        for j in range(n):
             if i != j:
                 model.Add(u[i] - u[j] + n * x[i, j] <= n - 1)
 
@@ -49,6 +49,8 @@ def TSP_CP(dist_matrix):
             for j in range(n):
                 if solver.Value(x[i, j]) == 1:
                     tour.append((i, j))
+        for i in range(n):
+            print('u[%i] = %i' % (i, solver.Value(u[i])))
     else:
         print('No solution found.')
     return tour, solver.ObjectiveValue()
