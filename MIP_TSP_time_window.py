@@ -51,9 +51,7 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
             if i != j:
                 constraint.SetCoefficient(x[j, i], 1)
     
-
     # time window constraints
-    # M[i] + C[i, j]*x[i, j] - M[j] <= (1 - x[i, j]) * 100000
     for i in range(num_nodes):
         for j in range(1, num_nodes):
             if i != j:
@@ -62,8 +60,6 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
                 constraint.SetCoefficient(x[i, j], C[i, j] + 100000000)
                 constraint.SetCoefficient(M[j], -1)
 
-    # w[j] = M[j] - M[i] - C[i, j] if x[i, j] = 1 else (w[j] == 0)
-    # to linearize, we have: w[j] >= M[j] - M[i] - C[i, j] - 100000*(1 - x[i, j])
     for i in range(num_nodes):
         for j in range(1, num_nodes):
             if i != j:
@@ -72,11 +68,8 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
                 constraint.SetCoefficient(M[j], -1)
                 constraint.SetCoefficient(M[i], 1)
                 constraint.SetCoefficient(x[i, j], -100000000)   
-                
-                
 
     # define objective function
-    # sum(C[i, j] * x[i, j] for i in range(num_nodes) for j in range(num_nodes) if j != i) + sum(w[i] for i in range(num_nodes))
     objective = model.Objective()
     for i in range(num_nodes):
         for j in range(num_nodes):
@@ -164,17 +157,17 @@ if __name__ == '__main__':
     # TSP_mixed_integer_programming(N, customers, t)
     
 # input from keyboard
-    N = int(input())
-    customers = []
-    t = []
-    for i in range(1, N+1):
-        e, l, d = map(int, input().split())
-        customers.append([e, l, d])
+    # N = int(input())
+    # customers = []
+    # t = []
+    # for i in range(1, N+1):
+    #     e, l, d = map(int, input().split())
+    #     customers.append([e, l, d])
 
-    for _ in range(N+1):
-        row = list(map(int, input().split()))
-        t.append(row)
-    TSP_mixed_integer_programming(N, customers, t)
+    # for _ in range(N+1):
+    #     row = list(map(int, input().split()))
+    #     t.append(row)
+    # TSP_mixed_integer_programming(N, customers, t)
     
-    # compare_ans_and_compute_time()
+    compare_ans_and_compute_time()
 

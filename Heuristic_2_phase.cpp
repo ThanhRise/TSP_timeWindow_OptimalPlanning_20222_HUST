@@ -286,7 +286,7 @@ std::vector<int> constructivePhase(int Maxlevel)
         // local search
         for (int i = 1; i <= N; i++)
         {
-            for (int j = i + 1; j <= N; j++)
+            for (int j = max(1, int(i -sqrt(N))); j <= min(N,int(i + sqrt(N))); j++)
             {
                 vector<int> newRoute = oneShiftChange(i, j, route);
                 // vector<int> newRoute = oneOptChange(i, j, route);
@@ -429,27 +429,30 @@ std::vector<int> v2OptimizationPhase(vector<int> route, int Maxlevel)
 int main()
 {
     input();
-    // inputFromFile();
+    // inputFromFile("input.txt");
 
-    int Maxlevel = N * N;
-    int maxTime = 3;
+    int Maxlevel = N * N * N;
+    int maxTime = 10;
     vector<int> route = constructivePhase(Maxlevel);
-    // for (int i = 1; i <= N; i++)
-    // {
-    //     cout << route[i] << " ";
-    // }
-    // cout << endl;
-    // cout << heuristic_phase1(route, M_calculate(route)) << endl;
-    // cout << heuristic_phase2(route, M_calculate(route)) << endl;
-
-    // route = GVNS_OptimizationPhase(route, Maxlevel, maxTime);
-    // route = v2OptimizationPhase(route, Maxlevel);
-    // cout << "after optimization" << endl;
-    cout << N << endl;
+    cout << "constructive phase" << endl;
     for (int i = 1; i <= N; i++)
     {
         cout << route[i] << " ";
     }
+    cout << endl;
+    // cout << heuristic_phase1(route, M_calculate(route)) << endl;
+    cout << heuristic_phase2(route, M_calculate(route)) << endl;
+
+    route = GVNS_OptimizationPhase(route, Maxlevel, maxTime);
+    // route = v2OptimizationPhase(route, Maxlevel);
+    cout << "after optimization" << endl;
+    for (int i = 1; i <= N; i++)
+    {
+        cout << route[i] << " ";
+    }
+    cout << endl;
+    // cout << heuristic_phase1(route, M_calculate(route)) << endl;
+    cout << heuristic_phase2(route, M_calculate(route)) << endl;
     cout << endl;
 
 
