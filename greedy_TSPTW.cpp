@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <random>
 #include <queue>
+#include <ctime>
+#include <chrono>
+#include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -41,6 +45,36 @@ void input()
             C[i][j] = d[i] + t[i][j];
         }
     }
+}
+
+void inputFromFile(string fileName){
+    ifstream file;
+    file.open(fileName);
+    file >> N;
+    e.resize(N + 1);
+    l.resize(N + 1);
+    d.resize(N + 1);
+    t.resize(N + 1);
+    C.resize(N + 1);
+    initPath.resize(N + 1);
+    for (int i = 0; i <= N; i++)
+    {
+        t[i].resize(N + 1);
+        C[i].resize(N + 1);
+    }
+    for (int i = 1; i <= N; i++)
+    {
+        file >> e[i] >> l[i] >> d[i];
+    }
+    for (int i = 0; i <= N; i++)
+    {
+        for (int j = 0; j <= N; j++)
+        {
+            file >> t[i][j];
+            C[i][j] = d[i] + t[i][j];
+        }
+    }
+    file.close();
 }
 
 std::vector<int> GreedyTimeClose()
@@ -156,13 +190,62 @@ std::vector<int> greedy()
 
 int main()
 {
-    input();
-    vector<int> route = greedy();
-    vector<int> TimeVisit = M_calculate(route);
-    for (int i = 1; i <= N; i++)
-    {
-        cout << route[i] << " ";
-    }
-    cout << endl;
-    cout << cost(route, TimeVisit) << endl;
+    // // input();
+    // inputFromFile();
+    // vector<int> route = greedy();
+    // vector<int> TimeVisit = M_calculate(route);
+    // cout << N << endl;
+    // for (int i = 1; i <= N; i++)
+    // {
+    //     cout << route[i] << " ";
+    // }
+
+// i have folder "testcase", in this folder have 10 file input.txt and 10 file output.txt
+// i want to run 10 file input.txt and compare with 10 file output.txt and calculate time run
+// i want to write time run to file "time.txt"
+
+    // string fileName[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
+    // string fileNameOut[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
+    // ofstream file;
+    // file.open("testcase/timeRun/time.txt");
+    // for (int i = 1; i <= 10; i++)
+    // {
+    //     string fullFileName = "testcase/input/" + fileName[i - 1];
+    //     inputFromFile(fullFileName);
+    //     auto start = chrono::high_resolution_clock::now();
+    //     vector<int> route = greedy();
+    //     auto stop = chrono::high_resolution_clock::now();
+    //     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+
+    //     // output has answer of testcase
+    //     // i want to compare output with my answer
+    //     string fullFileNameOut = "testcase/output/" + fileNameOut[i - 1];
+    //     ifstream fileOut;
+    //     fileOut.open(fullFileNameOut);
+    //     int NOut;
+    //     fileOut >> NOut;
+    //     vector<int> routeOut(NOut + 1);
+    //     for (int i = 1; i <= NOut; i++)
+    //     {
+    //         fileOut >> routeOut[i];
+    //     }
+    //     fileOut.close();
+    //     int costOut = cost(routeOut, M_calculate(routeOut));
+    //     int costMy = cost(route, M_calculate(route));
+    //     if (costOut == costMy)
+    //     {
+    //         cout << "Testcase " << i << " is correct" << endl;
+    //     }
+    //     else
+    //     {
+    //         cout << "Testcase " << i << " is incorrect" << ": " << costOut << " " << costMy << endl;
+    //     }
+    //     file << "Time run testcase " << i << ": " << duration.count() << " microseconds" << endl;
+    // }
+    // file.close();
+    // return 0;
+
+
+
 }
+

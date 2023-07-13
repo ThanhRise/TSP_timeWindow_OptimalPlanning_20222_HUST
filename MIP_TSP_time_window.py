@@ -1,6 +1,7 @@
 # MIXED-INTEGER PROGRAMMING MODEL FOR THE TIME WINDOWED TRAVELING SALESMAN PROBLEM
 
 from ortools.linear_solver import pywraplp
+import time
 
 def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
     model = pywraplp.Solver.CreateSolver('SCIP')
@@ -14,7 +15,7 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
     M = {}  # M[i] = time to visit city i
     d[0] = 0
     e[0] = 0
-    l[0] = 100000
+    l[0] = 100000000
     for i in range(1, num_nodes):
         e[i] = time_matrix[i-1][0]
         l[i] = time_matrix[i-1][1]
@@ -29,10 +30,6 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
     for i in range(1, num_nodes):
         M[i] = model.IntVar(e[i], l[i], 'M[%i]' % i)
 
-    # u[i] = j if city i is visited at position j
-    u = {}
-    for i in range(num_nodes):
-        u[i] = model.IntVar(0, num_nodes - 1, 'u[%i]' % i)
 
     # time waiting at city i
     w = {}
@@ -54,23 +51,15 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
             if i != j:
                 constraint.SetCoefficient(x[j, i], 1)
     
-    # subtour elimination
-    for i in range(1, num_nodes):
-        for j in range(num_nodes):
-            if i != j:
-                constraint = model.Constraint(-model.infinity(), num_nodes - 1)
-                constraint.SetCoefficient(u[i], 1)
-                constraint.SetCoefficient(u[j], -1)
-                constraint.SetCoefficient(x[i, j], num_nodes)
 
     # time window constraints
     # M[i] + C[i, j]*x[i, j] - M[j] <= (1 - x[i, j]) * 100000
     for i in range(num_nodes):
         for j in range(1, num_nodes):
             if i != j:
-                constraint = model.Constraint(-model.infinity(), 100000)
+                constraint = model.Constraint(-model.infinity(), 100000000)
                 constraint.SetCoefficient(M[i], 1)
-                constraint.SetCoefficient(x[i, j], C[i, j] + 100000)
+                constraint.SetCoefficient(x[i, j], C[i, j] + 100000000)
                 constraint.SetCoefficient(M[j], -1)
 
     # w[j] = M[j] - M[i] - C[i, j] if x[i, j] = 1 else (w[j] == 0)
@@ -78,11 +67,11 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
     for i in range(num_nodes):
         for j in range(1, num_nodes):
             if i != j:
-                constraint = model.Constraint(- 100000 - C[i,j], model.infinity())
+                constraint = model.Constraint(- 100000000 - C[i,j], model.infinity())
                 constraint.SetCoefficient(w[j], 1)
                 constraint.SetCoefficient(M[j], -1)
                 constraint.SetCoefficient(M[i], 1)
-                constraint.SetCoefficient(x[i, j], -100000)   
+                constraint.SetCoefficient(x[i, j], -100000000)   
                 
                 
 
@@ -99,41 +88,93 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
 
     status = model.Solve()
     if status == pywraplp.Solver.OPTIMAL:
-        print('Objective value =', model.Objective().Value())
-        for i in range(num_nodes):
-            for j in range(num_nodes):
-                if i != j and x[i, j].solution_value() > 0:
-                    print('%s -> %s.  Cost = %d' % (i, j, C[i, j]))
-        for i in range(num_nodes):
-            print('M[%i] = %i' % (i, M[i].solution_value()))
-        for i in range(num_nodes):
-            print('w[%i] = %i' % (i, w[i].solution_value()))
-        for i in range(num_nodes):
-            print('u[%i] = %i' % (i, u[i].solution_value()))
-
+        print(num_nodes- 1)
+        solution = {}
+        solution[0] = 0
+        for i in range(1, num_nodes):
+            solution[i] = M[i].solution_value()
+        solution = sorted(solution.items(), key=lambda x: x[1])
+        for i in range(1,num_nodes):
+            print(solution[i][0], end=' ')
     else:
         print('The problem does not have an optimal solution.')
 
     return model.Objective().Value()
 
+def compare_ans_and_compute_time():
+    base_path_input = 'testcase/input'
+    input_file = ["N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"]
+    base_path_output = 'testcase/output'
+    output_file = ["N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"]
+    write_time_to = 'testcase/timeRun/time.txt'
+    with open(write_time_to, 'w') as f:
+        for i in range(len(input_file)):
+            customers = []
+            t = []
+            with open(base_path_input + '/' + input_file[i], 'r') as file:
+                # Read the input
+                N = int(file.readline())
+
+                for k in range(1, N+1):
+                    e, l, d = map(int, file.readline().split())
+                    customers.append([e, l, d])
+
+                for _ in range(N+1):
+                    row = list(map(int, file.readline().split()))
+                    t.append(row)
+            start_time = time.time()
+            ans = TSP_mixed_integer_programming(N, customers, t)
+            end_time = time.time()
+            f.write(str(end_time - start_time) + '\n')
+
+            with open(base_path_output + '/' + output_file[i], 'r') as file:
+                num_nodes = int(file.readline())
+                list_nodes = list(map(int, file.readline().split()))
+                time_visit = {}
+                time_visit[0] = 0
+                list_nodes = [0] + list_nodes
+                d = [0] + [customers[i][2] for i in range(len(customers))]
+                e = [0] + [customers[i][0] for i in range(len(customers))]
+                for k in range(1, len(list_nodes)):
+                    time_visit[list_nodes[k]] = max(time_visit[list_nodes[k-1]] + t[list_nodes[k-1]][list_nodes[k]] + d[list_nodes[k-1]], e[list_nodes[k]])
+                myAns = time_visit[list_nodes[num_nodes]] + t[list_nodes[num_nodes]][0] + d[list_nodes[num_nodes]]
+
+            if ans == myAns:
+                print('\n Correct')
+            else:
+                print('\n Wrong', "myAns = ", myAns, "ans = ", ans)
+
 if __name__ == '__main__':
 
-    input_data = []
+# import from file
+    # input_data = []
+    # customers = []
+    # t = []
+    # with open('input.txt', 'r') as file:
+    # # Read the input
+    #     N = int(file.readline())
+        
+    #     for i in range(1, N+1):
+    #         e, l, d = map(int, file.readline().split())
+    #         customers.append([e, l, d])
+
+    #     for _ in range(N+1):
+    #         row = list(map(int, file.readline().split()))
+    #         t.append(row)
+    # TSP_mixed_integer_programming(N, customers, t)
+    
+# input from keyboard
+    N = int(input())
     customers = []
     t = []
-    with open('input.txt', 'r') as file:
-    # Read the input
-        N = int(file.readline())
-        
-        for i in range(1, N+1):
-            e, l, d = map(int, file.readline().split())
-            customers.append([e, l, d])
+    for i in range(1, N+1):
+        e, l, d = map(int, input().split())
+        customers.append([e, l, d])
 
-        for _ in range(N+1):
-            row = list(map(int, file.readline().split()))
-            t.append(row)
-    print(TSP_mixed_integer_programming(N, customers, t))
+    for _ in range(N+1):
+        row = list(map(int, input().split()))
+        t.append(row)
+    TSP_mixed_integer_programming(N, customers, t)
     
-    
-
+    # compare_ans_and_compute_time()
 

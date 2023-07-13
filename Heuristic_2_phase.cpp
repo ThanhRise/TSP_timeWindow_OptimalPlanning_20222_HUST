@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <random>
 #include <queue>
+#include <ctime>
+#include <chrono>
+#include <string>
 
 using namespace std;
 
@@ -47,11 +50,50 @@ void input()
         visited[i] = false;
     }
 }
+
+// input from file
+void inputFromFile(string fileName)
+{
+    ifstream file;
+    file.open(fileName);
+    file >> N;
+    e.resize(N + 1);
+    l.resize(N + 1);
+    d.resize(N + 1);
+    t.resize(N + 1);
+    C.resize(N + 1);
+    initPath.resize(N + 1);
+    for (int i = 0; i <= N; i++)
+    {
+        t[i].resize(N + 1);
+        C[i].resize(N + 1);
+    }
+    for (int i = 1; i <= N; i++)
+    {
+        file >> e[i] >> l[i] >> d[i];
+    }
+    for (int i = 0; i <= N; i++)
+    {
+        for (int j = 0; j <= N; j++)
+        {
+            file >> t[i][j];
+            C[i][j] = d[i] + t[i][j];
+        }
+    }
+    for (int i = 0; i <= N; i++)
+    {
+        visited[i] = false;
+    }
+    file.close();
+}
+
 // random path
-std::vector<int> randomPermutation(int N) {
-    std::vector<int> permutation(N+ 1);
+std::vector<int> randomPermutation(int N)
+{
+    std::vector<int> permutation(N + 1);
     permutation[0] = 0;
-    for (int i = 1; i <= N; i++) {
+    for (int i = 1; i <= N; i++)
+    {
         permutation[i] = i;
     }
     std::random_device rd;
@@ -84,7 +126,6 @@ std::vector<int> initPathGreedyTimeClose()
     return iterSort;
 }
 
-
 // calculate M: time to go from 0 to i
 std::vector<int> M_calculate(vector<int> route)
 {
@@ -92,7 +133,7 @@ std::vector<int> M_calculate(vector<int> route)
     M[0] = 0;
     for (int i = 1; i <= N; i++)
     {
-        M[route[i]] = max(e[route[i]] ,M[route[i - 1]] + C[route[i - 1]][route[i]]);
+        M[route[i]] = max(e[route[i]], M[route[i - 1]] + C[route[i - 1]][route[i]]);
     }
     return M;
 }
@@ -190,7 +231,7 @@ std::vector<int> twoOptChange(int i, int j, vector<int> route)
 }
 
 // perturbation
-std:: vector<int> perturbation(vector<int> route, int level)
+std::vector<int> perturbation(vector<int> route, int level)
 {
     // random is different with each call
     vector<int> newRoute(route);
@@ -199,15 +240,28 @@ std:: vector<int> perturbation(vector<int> route, int level)
     std::mt19937 gen(rd());
     int lowerBound = 1;
     int upperBound = N;
+    int lowerBound2 = -int(sqrt(N));
+    int upperBound2 = int(sqrt(N));
+
     std::uniform_int_distribution<int> dist(lowerBound, upperBound);
-    for (int k = 0; k < level; k++)
+    std::uniform_int_distribution<int> dist2(lowerBound2, upperBound2);
+    for (int k = 0; k < int(sqrt(level)); k++)
     {
         i = dist(gen);
-        j = dist(gen);
-        while (i == j)
+        j = dist2(gen);
+        while (j == 0)
         {
-            j = dist(gen);
+            j = dist2(gen);
         }
+        if (i + j > N)
+        {
+            j = N - i;
+        }
+        if (i + j < 1)
+        {
+            j = 1 - i;
+        }
+        j = i + j;
         newRoute = oneShiftChange(i, j, newRoute);
     }
     return newRoute;
@@ -217,8 +271,8 @@ std:: vector<int> perturbation(vector<int> route, int level)
 std::vector<int> constructivePhase(int Maxlevel)
 {
     int level = 1;
-    // initPath = initPathGreedyTimeClose();
-    initPath = randomPermutation(N);
+    initPath = initPathGreedyTimeClose();
+    // initPath = randomPermutation(N);
     vector<int> route(initPath);
     vector<int> timeVisit = M_calculate(route);
     vector<int> bestRoute(route);
@@ -250,11 +304,11 @@ std::vector<int> constructivePhase(int Maxlevel)
         if (h < heuristic_phase1(bestRoute, M_calculate(bestRoute)))
         {
             bestRoute = route;
-            level ++;
+            level = 1;
         }
         else
         {
-            level = 1;
+            level++;
         }
     }
     return route;
@@ -271,7 +325,7 @@ std::vector<int> VND(vector<int> route, int level)
     route = perturbation(route, level);
     for (int i = 1; i <= N; i++)
     {
-        for (int j = 1; j <= N; j++)
+        for (int j = max(1, int(i -sqrt(N))); j <= min(N,int(i + sqrt(N))); j++)
         {
             if (i == j)
             {
@@ -290,33 +344,34 @@ std::vector<int> VND(vector<int> route, int level)
             }
         }
     }
-    
+
     if (bestH < h)
     {
         BestRoute = route;
     }
     else
     {
-    route = perturbation(route, level);
-    for (int i = 1; i <= N - 1; i++)
-    {
-        for (int j = i + 1; j <= N; j++)
+        route = perturbation(route, level);
+        for (int i = 1; i <= N - 1; i++)
         {
-            vector<int> newRoute = twoOptChange(i, j, route);
-            vector<int> newTimeVisit = M_calculate(newRoute);
-            int newH = heuristic_phase2(newRoute, newTimeVisit);
-            if (newH < bestH)
+            for (int j = max(1, int(i -sqrt(N))); j <= min(N,int(i + sqrt(N))); j++)
             {
-                if (feasible(newRoute, newTimeVisit))
+                vector<int> newRoute = twoOptChange(i, j, route);
+                vector<int> newTimeVisit = M_calculate(newRoute);
+                int newH = heuristic_phase2(newRoute, newTimeVisit);
+                if (newH < bestH)
                 {
-                    route = newRoute;
-                    bestH = newH;
+                    if (feasible(newRoute, newTimeVisit))
+                    {
+                        route = newRoute;
+                        bestH = newH;
+                    }
                 }
             }
         }
     }
-    }
-    if (bestH < h){
+    if (bestH < h)
+    {
         BestRoute = route;
     }
 
@@ -324,11 +379,12 @@ std::vector<int> VND(vector<int> route, int level)
 }
 
 // optimization phase with GVNS i.e. VNS with VND as local search
-std::vector<int> GVNS_OptimizationPhase(vector<int> route, int Maxlevel){
+std::vector<int> GVNS_OptimizationPhase(vector<int> route, int Maxlevel, int maxTime)
+{
     int level = 1;
     vector<int> bestRoute(route);
     int bestH = heuristic_phase2(bestRoute, M_calculate(bestRoute));
-    while (level < Maxlevel)
+    while (level < Maxlevel && clock() < maxTime * CLOCKS_PER_SEC)
     {
         // local search
         route = VND(bestRoute, level);
@@ -346,55 +402,98 @@ std::vector<int> GVNS_OptimizationPhase(vector<int> route, int Maxlevel){
     return bestRoute;
 }
 
-// 15 18 4 3 2 16 14 11 1 8 17 7 13 6 5 10 19 12 9 - ans
-// 15 18 4 3 5 2 16 14 11 1 8 17 7 13 6 9 10 12 19
+// version 2
+std::vector<int> v2OptimizationPhase(vector<int> route, int Maxlevel)
+{
+    int level = 1;
+    vector<int> bestRoute(route);
+    int bestH = heuristic_phase2(bestRoute, M_calculate(bestRoute));
+    while (level < Maxlevel)
+    {
+        // local search
+        route = constructivePhase(Maxlevel);
+        if (heuristic_phase2(route, M_calculate(route)) < bestH)
+        {
+            bestRoute = route;
+            bestH = heuristic_phase2(bestRoute, M_calculate(bestRoute));
+            level = 1;
+        }
+        else
+        {
+            level++;
+        }
+    }
+    return bestRoute;
+}
+
 int main()
 {
     input();
+    // inputFromFile();
 
-    int Maxlevel = N*N*N;
+    int Maxlevel = N * N;
+    int maxTime = 3;
     vector<int> route = constructivePhase(Maxlevel);
+    // for (int i = 1; i <= N; i++)
+    // {
+    //     cout << route[i] << " ";
+    // }
+    // cout << endl;
+    // cout << heuristic_phase1(route, M_calculate(route)) << endl;
+    // cout << heuristic_phase2(route, M_calculate(route)) << endl;
+
+    // route = GVNS_OptimizationPhase(route, Maxlevel, maxTime);
+    // route = v2OptimizationPhase(route, Maxlevel);
+    // cout << "after optimization" << endl;
+    cout << N << endl;
     for (int i = 1; i <= N; i++)
     {
         cout << route[i] << " ";
     }
     cout << endl;
-    cout << heuristic_phase1(route, M_calculate(route)) << endl;
 
-    route = GVNS_OptimizationPhase(route, Maxlevel);
-    for (int i = 1; i <= N; i++)
-    {
-        cout << route[i] << " ";
-    }
-    cout << endl;
 
-    vector<int> timeVisit = M_calculate(route);
-    
-    cout << "heuristic_phase1: " << heuristic_phase1(route, timeVisit) << endl;
-    cout << "cost: " << heuristic_phase2(route, timeVisit) << endl;
-    for (int i = 1; i <= N; i++)
-    {
-        cout << "i[" << route[i] << "]:" << timeVisit[route[i]] << " ";
-    }
-    cout << endl;
-    for (int i = 1; i <= N; i++)
-    {
-        cout << "i[" << route[i] << "]:" << l[route[i]] - timeVisit[route[i]] << " ";
-    }
-    cout << endl;
 
-    // vector<int> test = {0, 9, 7, 4, 5, 10, 3, 2, 8, 11, 1, 6};
-    // vector<int> timeVisit = M_calculate(test);
-    // cout << "heuristic_phase1: " << heuristic_phase1(test, timeVisit) << endl;
-    // cout << "cost: " << cost(test) << endl;
-    // for (int i = 1; i <= N; i++)
+    // string fileName[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
+    // string fileNameOut[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
+    // ofstream file;
+    // file.open("testcase/timeRun/time.txt");
+    // for (int i = 1; i <= 10; i++)
     // {
-    //     cout << "i[" << test[i] << "]:" << timeVisit[test[i]] << " ";
+    //     string fullFileName = "testcase/input/" + fileName[i - 1];
+    //     inputFromFile(fullFileName);
+    //     int Maxlevel = N * N;
+    //     auto start = chrono::high_resolution_clock::now();
+    //     vector<int> route = constructivePhase(Maxlevel);
+    //     auto stop = chrono::high_resolution_clock::now();
+    //     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+
+    //     // output has answer of testcase
+    //     // i want to compare output with my answer
+    //     string fullFileNameOut = "testcase/output/" + fileNameOut[i - 1];
+    //     ifstream fileOut;
+    //     fileOut.open(fullFileNameOut);
+    //     int NOut;
+    //     fileOut >> NOut;    
+    //     vector<int> routeOut(NOut + 1);
+    //     for (int i = 1; i <= NOut; i++)
+    //     {
+    //         fileOut >> routeOut[i];
+    //     }
+    //     fileOut.close();
+    //     int costOut = heuristic_phase2(routeOut, M_calculate(routeOut));
+    //     int costMy = heuristic_phase2(route, M_calculate(route));
+    //     if (costOut == costMy)
+    //     {
+    //         cout << "Testcase " << i << " is correct" << endl;
+    //     }
+    //     else
+    //     {
+    //         cout << "Testcase " << i << " is incorrect" << ": " << costOut << " " << costMy << endl;
+    //     }
+    //     file << "Time run testcase " << i << ": " << duration.count() << " microseconds" << endl;
     // }
-    // cout << endl;
-    // for (int i = 1; i <= N; i++)
-    // {
-    //     cout << "i[" << test[i] << "]:" << l[test[i]] - timeVisit[test[i]] << " ";
-    // }
-    // cout << endl;
+    // file.close();
+    // return 0;
+
 }

@@ -33,12 +33,6 @@ M(i) tổng thời gian khi đến thành phố i,
 	- M(u) = e(u)
 
 
-- vet can 
-- CP 
-- MIP
-
-- tham lam 
-- heuristic 
 
 test case: 657
 19

@@ -10,6 +10,7 @@ int C[1001][1001];     // C[i][j] = d[i] + t[i][j]
 int M[1001];           // tổng thời gian đi tử 0 đến i (đến thôi chứ chưa dỡ hàng)
 int BEST = 1000000000; // tổng thời gian đi từ 0 đến N và quay lại 0
 int path[1001];        // đường đi từ 0 đến N và quay lại 0
+int Cmin = 1000000000;
 
 // ràng buộc M
 // M(u) = M(u) + C[i][u] nếu X(u,i) = 1 và e(u) < M(u) < l(u)
@@ -42,7 +43,9 @@ void input()
         for (int j = 0; j <= N; j++)
         {
             C[i][j] = d[i] + t[i][j];
-            // cout << C[i][j] << " ";
+        if (i != j){
+            Cmin = min(Cmin, C[i][j]);
+        }
         }
     }
 }
@@ -79,7 +82,12 @@ int TRY(int k, int prev)
             {
                 M[i] = M[prev] + C[prev][i];
             }
-            // cout << "k =" << k << "  M[" << i << "] = " << M[i] << endl;
+            if (M[i] > BEST - Cmin*(N-k+1))
+            {
+                visited[i] = false;
+                M[i] = M_prev;
+                continue;
+            }
             if (k == N)
             {
                 solution();
@@ -95,16 +103,39 @@ int TRY(int k, int prev)
     return 1000000000;
 }
 
+// decoding code for function TRY
+// for i = 1 to N
+//     if not visited[i] and M[prev] + C[prev][i] <= l[i]
+//         visited[i] = true
+//         s[k] = i
+//         M_prev = M[i]
+//         if M[prev] + C[prev][i] < e[i]
+//             M[i] = e[i]
+//         else
+//             M[i] = M[prev] + C[prev][i]
+//         if M[i] > BEST - Cmin*(N-k+1)
+//             visited[i] = false
+//             M[i] = M_prev
+//             continue
+//         if k == N
+//             solution()
+//         else
+//             TRY(k + 1, i)
+//         visited[i] = false
+//         M[i] = M_prev
+
+
 int main()
 {
     input();
     s[0] = 0;
     M[0] = 0;
     TRY(1, 0);
+    cout << N << endl;
     for (int i = 1; i <= N; i++)
     {
         cout << path[i] << " ";
     }
-    cout << endl;
-    cout << BEST;
+    // cout << endl;
+    // cout << BEST;
 }
