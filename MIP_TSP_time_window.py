@@ -50,6 +50,12 @@ def TSP_mixed_integer_programming(n, time_matrix, dist_matrix):
         for j in range(num_nodes):
             if i != j:
                 constraint.SetCoefficient(x[j, i], 1)
+
+    # for i in range(num_nodes):
+    #     constraint = model.Constraint(0, 0)
+    #     for j in range(num_nodes):
+    #         if i == j:
+    #             constraint.SetCoefficient(x[i, j], 1)
     
     # time window constraints
     for i in range(num_nodes):
@@ -140,23 +146,24 @@ def compare_ans_and_compute_time():
 if __name__ == '__main__':
 
 # import from file
-    # input_data = []
-    # customers = []
-    # t = []
-    # with open('input.txt', 'r') as file:
-    # # Read the input
-    #     N = int(file.readline())
+    input_data = []
+    customers = []
+    t = []
+    with open('input.txt', 'r') as file:
+    # Read the input
+        N = int(file.readline())
         
-    #     for i in range(1, N+1):
-    #         e, l, d = map(int, file.readline().split())
-    #         customers.append([e, l, d])
+        for i in range(1, N+1):
+            e, l, d = map(int, file.readline().split())
+            customers.append([e, l, d])
 
-    #     for _ in range(N+1):
-    #         row = list(map(int, file.readline().split()))
-    #         t.append(row)
-    # TSP_mixed_integer_programming(N, customers, t)
+        for _ in range(N+1):
+            row = list(map(int, file.readline().split()))
+            t.append(row)
+    TSP_mixed_integer_programming(N, customers, t)
     
 # input from keyboard
+
     # N = int(input())
     # customers = []
     # t = []
@@ -169,5 +176,6 @@ if __name__ == '__main__':
     #     t.append(row)
     # TSP_mixed_integer_programming(N, customers, t)
     
-    compare_ans_and_compute_time()
+    # compare ans and compute time
+    # compare_ans_and_compute_time()
 

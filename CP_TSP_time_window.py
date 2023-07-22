@@ -126,35 +126,38 @@ def compare_ans_and_compute_time():
 if __name__ == '__main__':
 
     # input from file
-    # customers = []
-    # t = []
-    # with open('input.txt', 'r') as file:
-    #     # Read the input
-    #     N = int(file.readline())
 
-    #     for i in range(1, N+1):
-    #         e, l, d = map(int, file.readline().split())
-    #         customers.append([e, l, d])
-
-    #     for _ in range(N+1):
-    #         row = list(map(int, file.readline().split()))
-    #         t.append(row)
-    # TSP_CP(N, customers, t)
-
-    # input from keyboard
-    N = int(input())
     customers = []
     t = []
-    for i in range(1, N+1):
-        e, l, d = map(int, input().split())
-        customers.append([e, l, d])
+    with open('input.txt', 'r') as file:
+        # Read the input
+        N = int(file.readline())
 
-    for _ in range(N+1):
-        row = list(map(int, input().split()))
-        t.append(row)
+        for i in range(1, N+1):
+            e, l, d = map(int, file.readline().split())
+            customers.append([e, l, d])
+
+        for _ in range(N+1):
+            row = list(map(int, file.readline().split()))
+            t.append(row)
     TSP_CP(N, customers, t)
 
+    # # input from keyboard
 
+    # N = int(input())
+    # customers = []
+    # t = []
+    # for i in range(1, N+1):
+    #     e, l, d = map(int, input().split())
+    #     customers.append([e, l, d])
+
+    # for _ in range(N+1):
+    #     row = list(map(int, input().split()))
+    #     t.append(row)
+    # TSP_CP(N, customers, t)
+
+    # Compare ans and compute time
+    
     # compare_ans_and_compute_time()
 
 

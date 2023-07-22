@@ -1,10 +1,10 @@
-0.020539522171020508
-0.022852420806884766
-0.629819393157959
-1.6499483585357666
-3.173064708709717
-8.881279468536377
-12.998151302337646
-20.041828155517578
-36.00306272506714
-42.83288240432739
+Time run testcase 1: 0 microseconds
+Time run testcase 2: 0 microseconds
+Time run testcase 3: 0 microseconds
+Time run testcase 4: 0 microseconds
+Time run testcase 5: 1132 microseconds
+Time run testcase 6: 993 microseconds
+Time run testcase 7: 1298 microseconds
+Time run testcase 8: 0 microseconds
+Time run testcase 9: 1999 microseconds
+Time run testcase 10: 1989 microseconds

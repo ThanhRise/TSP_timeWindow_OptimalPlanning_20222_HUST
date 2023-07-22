@@ -190,19 +190,17 @@ std::vector<int> greedy()
 
 int main()
 {
-    // // input();
-    // inputFromFile();
-    // vector<int> route = greedy();
-    // vector<int> TimeVisit = M_calculate(route);
-    // cout << N << endl;
-    // for (int i = 1; i <= N; i++)
-    // {
-    //     cout << route[i] << " ";
-    // }
+    // input();
+    inputFromFile("input.txt");
+    vector<int> route = greedy();
+    vector<int> TimeVisit = M_calculate(route);
+    cout << N << endl;
+    for (int i = 1; i <= N; i++)
+    {
+        cout << route[i] << " ";
+    }
 
-// i have folder "testcase", in this folder have 10 file input.txt and 10 file output.txt
-// i want to run 10 file input.txt and compare with 10 file output.txt and calculate time run
-// i want to write time run to file "time.txt"
+    // compare output with my answer
 
     // string fileName[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
     // string fileNameOut[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};

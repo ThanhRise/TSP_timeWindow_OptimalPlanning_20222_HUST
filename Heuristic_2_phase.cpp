@@ -349,31 +349,31 @@ std::vector<int> VND(vector<int> route, int level)
     {
         BestRoute = route;
     }
-    else
-    {
-        route = perturbation(route, level);
-        for (int i = 1; i <= N - 1; i++)
-        {
-            for (int j = max(1, int(i -sqrt(N))); j <= min(N,int(i + sqrt(N))); j++)
-            {
-                vector<int> newRoute = twoOptChange(i, j, route);
-                vector<int> newTimeVisit = M_calculate(newRoute);
-                int newH = heuristic_phase2(newRoute, newTimeVisit);
-                if (newH < bestH)
-                {
-                    if (feasible(newRoute, newTimeVisit))
-                    {
-                        route = newRoute;
-                        bestH = newH;
-                    }
-                }
-            }
-        }
-    }
-    if (bestH < h)
-    {
-        BestRoute = route;
-    }
+    // else
+    // {
+    //     route = perturbation(route, level);
+    //     for (int i = 1; i <= N - 1; i++)
+    //     {
+    //         for (int j = max(1, int(i -sqrt(N))); j <= min(N,int(i + sqrt(N))); j++)
+    //         {
+    //             vector<int> newRoute = twoOptChange(i, j, route);
+    //             vector<int> newTimeVisit = M_calculate(newRoute);
+    //             int newH = heuristic_phase2(newRoute, newTimeVisit);
+    //             if (newH < bestH)
+    //             {
+    //                 if (feasible(newRoute, newTimeVisit))
+    //                 {
+    //                     route = newRoute;
+    //                     bestH = newH;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // if (bestH < h)
+    // {
+    //     BestRoute = route;
+    // }
 
     return BestRoute;
 }
@@ -428,11 +428,12 @@ std::vector<int> v2OptimizationPhase(vector<int> route, int Maxlevel)
 
 int main()
 {
-    input();
-    // inputFromFile("input.txt");
+    // input();
+    inputFromFile("input.txt");
 
     int Maxlevel = N * N * N;
     int maxTime = 10;
+    auto start = chrono::high_resolution_clock::now();
     vector<int> route = constructivePhase(Maxlevel);
     cout << "constructive phase" << endl;
     for (int i = 1; i <= N; i++)
@@ -444,6 +445,8 @@ int main()
     cout << heuristic_phase2(route, M_calculate(route)) << endl;
 
     route = GVNS_OptimizationPhase(route, Maxlevel, maxTime);
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
     // route = v2OptimizationPhase(route, Maxlevel);
     cout << "after optimization" << endl;
     for (int i = 1; i <= N; i++)
@@ -453,50 +456,49 @@ int main()
     cout << endl;
     // cout << heuristic_phase1(route, M_calculate(route)) << endl;
     cout << heuristic_phase2(route, M_calculate(route)) << endl;
-    cout << endl;
+    cout << "Time run: " << duration.count() << " microseconds" << endl;
 
+    //compare with output
 
+    string fileName[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
+    string fileNameOut[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
+    ofstream file;
+    file.open("testcase/timeRun/time.txt");
+    for (int i = 1; i <= 10; i++)
+    {
+        string fullFileName = "testcase/input/" + fileName[i - 1];
+        inputFromFile(fullFileName);
+        int Maxlevel = N * N;
+        auto start = chrono::high_resolution_clock::now();
+        vector<int> route = constructivePhase(Maxlevel);
+        auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
 
-    // string fileName[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
-    // string fileNameOut[] = {"N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", "N600.txt", "N700.txt", "N900.txt", "N1000.txt"};
-    // ofstream file;
-    // file.open("testcase/timeRun/time.txt");
-    // for (int i = 1; i <= 10; i++)
-    // {
-    //     string fullFileName = "testcase/input/" + fileName[i - 1];
-    //     inputFromFile(fullFileName);
-    //     int Maxlevel = N * N;
-    //     auto start = chrono::high_resolution_clock::now();
-    //     vector<int> route = constructivePhase(Maxlevel);
-    //     auto stop = chrono::high_resolution_clock::now();
-    //     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-
-    //     // output has answer of testcase
-    //     // i want to compare output with my answer
-    //     string fullFileNameOut = "testcase/output/" + fileNameOut[i - 1];
-    //     ifstream fileOut;
-    //     fileOut.open(fullFileNameOut);
-    //     int NOut;
-    //     fileOut >> NOut;    
-    //     vector<int> routeOut(NOut + 1);
-    //     for (int i = 1; i <= NOut; i++)
-    //     {
-    //         fileOut >> routeOut[i];
-    //     }
-    //     fileOut.close();
-    //     int costOut = heuristic_phase2(routeOut, M_calculate(routeOut));
-    //     int costMy = heuristic_phase2(route, M_calculate(route));
-    //     if (costOut == costMy)
-    //     {
-    //         cout << "Testcase " << i << " is correct" << endl;
-    //     }
-    //     else
-    //     {
-    //         cout << "Testcase " << i << " is incorrect" << ": " << costOut << " " << costMy << endl;
-    //     }
-    //     file << "Time run testcase " << i << ": " << duration.count() << " microseconds" << endl;
-    // }
-    // file.close();
-    // return 0;
+        // output has answer of testcase
+        string fullFileNameOut = "testcase/output/" + fileNameOut[i - 1];
+        ifstream fileOut;
+        fileOut.open(fullFileNameOut);
+        int NOut;
+        fileOut >> NOut;    
+        vector<int> routeOut(NOut + 1);
+        for (int i = 1; i <= NOut; i++)
+        {
+            fileOut >> routeOut[i];
+        }
+        fileOut.close();
+        int costOut = heuristic_phase2(routeOut, M_calculate(routeOut));
+        int costMy = heuristic_phase2(route, M_calculate(route));
+        if (costOut == costMy)
+        {
+            cout << "Testcase " << i << " is correct" << endl;
+        }
+        else
+        {
+            cout << "Testcase " << i << " is incorrect" << ": " << costOut << " " << costMy << endl;
+        }
+        file << "Time run testcase " << i << ": " << duration.count() << " microseconds" << endl;
+    }
+    file.close();
+    return 0;
 
 }
